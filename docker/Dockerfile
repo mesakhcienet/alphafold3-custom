@@ -66,7 +66,7 @@ COPY . /app/alphafold
 WORKDIR /app/alphafold
 
 # Install the Python dependencies AlphaFold 3 needs.
-RUN pip3 install -r dev-requirements.txt
+RUN pip3 install -r requirements.txt
 RUN pip3 install --no-deps .
 # Build chemical components database (this binary was installed by pip).
 RUN build_data
