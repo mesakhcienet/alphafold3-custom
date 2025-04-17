@@ -16,16 +16,33 @@ FROM nvidia/cuda:12.6.0-base-ubuntu22.04
 # git is required for pyproject.toml toolchain's use of CMakeLists.txt.
 # gcc, g++, make are required for compiling hmmer and AlphaFold 3 libaries.
 # zlib is a required dependency of AlphaFold 3.
-RUN apt update --quiet \
-    && apt install --yes --quiet software-properties-common \
-    && apt install --yes --quiet git wget gcc g++ make zlib1g-dev zstd
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install basic utilities and dependencies
+RUN apt update --quiet && apt install -y --quiet \
+    software-properties-common \
+    curl \
+    gnupg \
+    lsb-release \
+    git wget gcc g++ make zlib1g-dev zstd
 
 # Get apt repository of specific Python versions. Then install Python. Tell APT
 # this isn't an interactive TTY to avoid timezone prompt when installing.
-RUN add-apt-repository ppa:deadsnakes/ppa \
-    && DEBIAN_FRONTEND=noninteractive apt install --yes --quiet python3.11 python3-pip python3.11-venv python3.11-dev
+# Add deadsnakes PPA safely and install Python 3.11 and related packages
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt update --quiet && \
+    apt install -y --quiet \
+        python3.11 \
+        python3.11-venv \
+        python3.11-dev \
+        python3-pip
+
+# Set up virtual environment
 RUN python3.11 -m venv /alphafold3_venv
+
+# Add virtual environment and HMMER to the PATH
 ENV PATH="/hmmer/bin:/alphafold3_venv/bin:$PATH"
+
 # Update pip to the latest version. Not necessary in Docker, but good to do when
 # this is used as a recipe for local installation since we rely on new pip
 # features for secure installs.
